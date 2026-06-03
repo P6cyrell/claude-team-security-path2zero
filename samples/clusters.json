@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "team": "BRM",
+  "derived_at": "2026-05-22",
+  "repo_cache_root": "/tmp/team-security-path2zero-cache/BRM",
+  "clusters": [
+    {
+      "id": "01",
+      "slug": "frenchfines-modernization",
+      "name": "FrenchFines — Node 8/Buster modernization",
+      "repos": ["sss-enforcement-frenchfines-service"],
+      "cve_count": 268,
+      "primary_source": "trivy-base-image",
+      "rationale": "Single service holds 98% of remaining criticals. Node 8 on Debian Buster — both 5+ years past EOL. Closing this cluster requires Node 20 upgrade + base-image swap (PSDEV-62502) which is blocked on the ES production data migration (now complete).",
+      "blocked_by": ["PSDEV-62502"]
+    },
+    {
+      "id": "02",
+      "slug": "tariffmod-dep-bumps",
+      "name": "Tariff-modifier facade — npm dependency bumps",
+      "repos": ["hub-parking-tariffmodifiers-facade"],
+      "cve_count": 3,
+      "primary_source": "dependabot-npm",
+      "primary_package": "axios",
+      "rationale": "Three criticals in one repo, all from outdated npm dependencies (axios + form-data + handlebars). Single PR with overrides closes the cluster. Closing today (2026-05-22)."
+    },
+    {
+      "id": "03",
+      "slug": "sss-dbinit-overrides",
+      "name": "sss-dbinit — minimist + braces overrides",
+      "repos": ["sss-dbinit"],
+      "cve_count": 2,
+      "primary_source": "dependabot-npm",
+      "primary_package": "braces",
+      "rationale": "Two criticals from `braces` and `minimist`, both transitive. Single npm overrides block in package.json closes both. Closing today (2026-05-22)."
+    }
+  ]
+}

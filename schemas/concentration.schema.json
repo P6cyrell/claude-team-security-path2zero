@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arrive.com/schemas/path-to-zero/concentration.schema.json",
+  "title": "Concentration facts",
+  "description": "Per-team critical vulnerability concentration by repo. Produced by Phase 1 (data-fetcher) via compute_concentration.py from the raw issues dump. Consumed by Phase 2 (derive_clusters.py).",
+  "type": "object",
+  "required": ["schema_version", "team", "as_of_date", "total_criticals", "repos", "endpoint_status"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "team": { "type": "string" },
+    "as_of_date": { "type": "string", "format": "date" },
+    "total_criticals": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Authoritative critical count from get_open_vulnerabilities. Sum of repos[].critical_count should equal this; deviation indicates de-duplication or API-vs-issues drift."
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["repo", "critical_count", "pct_of_total"],
+        "additionalProperties": false,
+        "properties": {
+          "repo":            { "type": "string" },
+          "critical_count":  { "type": "integer", "minimum": 0 },
+          "pct_of_total":    { "type": "number",  "minimum": 0, "maximum": 100 },
+          "primary_source":  {
+            "type": "string",
+            "enum": ["trivy-base-image", "dependabot-npm", "dependabot-other", "code-scanning", "secret-scanning", "mixed"]
+          },
+          "high_count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "endpoint_status": {
+      "type": "object",
+      "description": "Which security-insights endpoints worked on this fetch. The /reports/* family is known to 500 server-side under heavy filters. Phase 2 reads this to know whether trend/MTTR data was available.",
+      "additionalProperties": false,
+      "properties": {
+        "open_vulnerabilities": { "type": "string", "enum": ["ok", "failed"] },
+        "security_issues":      { "type": "string", "enum": ["ok", "failed"] },
+        "top_assets":           { "type": "string", "enum": ["ok", "failed"] },
+        "resolving_trends":     { "type": "string", "enum": ["ok", "failed"] },
+        "mttr":                 { "type": "string", "enum": ["ok", "failed"] },
+        "sla":                  { "type": "string", "enum": ["ok", "failed"] }
+      }
+    }
+  }
+}

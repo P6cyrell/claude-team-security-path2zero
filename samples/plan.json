@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "team": "BRM",
+  "as_of_date": "2026-05-22",
+  "engineering_lead": "Geoffray",
+  "epics": [
+    {"id": "PSDEV-62500", "name": "security"},
+    {"id": "PSDEV-62501", "name": "Control"},
+    {"id": "PSDEV-62502", "name": "FrenchFines"}
+  ],
+  "exec_summary": {
+    "peak": 885,
+    "today": 273,
+    "services_with_criticals": 3,
+    "services_after_eod": 1,
+    "subtitle": "-69% from peak  ·  3 services left today  ·  FrenchFines is the entire surface after EOD",
+    "headline_bullets": [
+      "Criticals concentrated on 3 services — FrenchFines (268), tariffmod-facade (3), sss-dbinit (2)",
+      "tariffmod-facade + sss-dbinit closing today; FrenchFines becomes 100% of remaining surface",
+      "ES production data migration complete across AU/EU/US — unblocks Control + FrenchFines"
+    ]
+  },
+  "burndown_png_path": "/tmp/render-smoke-full/burndown.png",
+  "burndown_series": {
+    "baseline_date": "2026-05-19",
+    "actual": [
+      {"date": "2026-04-12", "value": 885},
+      {"date": "2026-04-24", "value": 566},
+      {"date": "2026-05-08", "value": 412},
+      {"date": "2026-05-19", "value": 354},
+      {"date": "2026-05-20", "value": 282},
+      {"date": "2026-05-22", "value": 273}
+    ],
+    "baseline": [
+      {"date": "2026-05-19", "value": 354},
+      {"date": "2026-06-30", "value": 0}
+    ],
+    "forecast": [
+      {"date": "2026-05-22", "value": 273},
+      {"date": "2026-06-03", "value": 268},
+      {"date": "2026-06-26", "value": 0}
+    ]
+  },
+  "remaining_surface": [
+    {"repo": "sss-enforcement-frenchfines-service", "critical": 268, "high": 1850, "status": "Critical path · PSDEV-62502"},
+    {"repo": "hub-parking-tariffmodifiers-facade",  "critical": 3,   "high": 46,   "status": "Fixing today (2026-05-22)"},
+    {"repo": "sss-dbinit",                          "critical": 2,   "high": 19,   "status": "Fixing today (2026-05-22)"}
+  ],
+  "dependency_grid": {
+    "title": "ES production data migration",
+    "narrative": "Operational prerequisite for both Control and FrenchFines upgrades. Now complete across all regions.",
+    "regions": [
+      {"name": "AU", "status": "Complete ✓"},
+      {"name": "EU", "status": "Complete ✓"},
+      {"name": "US", "status": "Complete ✓"}
+    ]
+  },
+  "critical_path_deep_dive": {
+    "service": "FrenchFines",
+    "stat_line": "268 criticals + 1,850 highs · Node 8/Buster · PSDEV-62502",
+    "rationale_bullets": [
+      "Node 8 on Debian Buster — 5+ years past EOL for both runtime and OS.",
+      "After today's fixes on tariffmod-facade + sss-dbinit, 100% of BRM criticals sit here.",
+      "ES production data migration is now complete — the only remaining dependency is in hand.",
+      "Late June target close aligned with PSDEV-62502 epic."
+    ]
+  },
+  "epic_status": [
+    {"id": "PSDEV-62500", "state": "In flight",     "summary": "Security vulnerability tasks. Today's tariffmod-facade + sss-dbinit fixes ship under this epic. Primary burndown tracker."},
+    {"id": "PSDEV-62501", "state": "Merged",        "summary": "Control technical upgrade. Merged to main. ES production migration complete. Deploys 2026-06-03."},
+    {"id": "PSDEV-62502", "state": "Critical path", "summary": "FrenchFines technical upgrade. 5/10 sub-tasks complete. Closes the tail late June."}
+  ],
+  "resource_reallocation": [
+    {"engineer": "Steven Dugois",     "from": "Pulse US stream",    "to": "Moved → security"},
+    {"engineer": "Kilian Vuillaume",  "from": "Datadog monitoring", "to": "Moved → security"},
+    {"engineer": "Edvin Smajić",      "from": "Datadog monitoring", "to": "Moved → security"},
+    {"engineer": "Kilian Beaumont",   "from": "Datadog monitoring", "to": "Half-allocated → security"},
+    {"engineer": "Nicolas Billamboz", "from": "—",                  "to": "Technical upgrade stream"}
+  ],
+  "timeline": [
+    {"date": "2026-04-12", "milestone": "Prior advisory baseline",                "open_criticals": 885},
+    {"date": "2026-04-24", "milestone": "Full advisory refresh",                  "open_criticals": 566},
+    {"date": "2026-05-19", "milestone": "Geoffray status update",                 "open_criticals": 354},
+    {"date": "2026-05-20", "milestone": "Resource reallocation + Control merged", "open_criticals": 282},
+    {"date": "2026-05-22", "milestone": "Today — 3 services with criticals",      "open_criticals": 273},
+    {"date": "2026-06-03", "milestone": "Control deploys (ES migration in hand)", "open_criticals": 268},
+    {"date": "2026-06-26", "milestone": "FrenchFines closes the tail",            "open_criticals": 0}
+  ],
+  "asks": [
+    {"num": 1, "title": "Acknowledge the concentration",     "body": "After today, 100% of remaining BRM criticals sit on FrenchFines. Clean shape for the next 5 weeks."},
+    {"num": 2, "title": "Endorse the resource reallocation", "body": "Still in force; Pulse + Datadog monitoring streams absorbing the cost through Q2."},
+    {"num": 3, "title": "Track via the three epics",         "body": "PSDEV-62500 (security), PSDEV-62501 (Control), PSDEV-62502 (FrenchFines)."},
+    {"num": 4, "title": "Confirm criticality vs. roadmap",   "body": "These vulnerabilities remain the highest priority over Pulse self-service rate management for BRM through Q2."}
+  ]
+}

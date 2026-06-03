@@ -1,0 +1,8 @@
+{
+  "open_vulnerabilities": "ok",
+  "security_issues":      "ok",
+  "top_assets":           "ok",
+  "resolving_trends":     "failed",
+  "mttr":                 "failed",
+  "sla":                  "failed"
+}

@@ -1,0 +1,23 @@
+{
+  "team": "BRM",
+  "page_size": 100,
+  "items": [
+    {"id": "i-001", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Trivy",      "cve_id": "CVE-2024-buster-openssl", "package": "openssl",   "ecosystem": null},
+    {"id": "i-002", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Trivy",      "cve_id": "CVE-2023-buster-glibc",   "package": "glibc",     "ecosystem": null},
+    {"id": "i-003", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Trivy",      "cve_id": "CVE-2023-buster-perl",    "package": "perl",      "ecosystem": null},
+    {"id": "i-004", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Trivy",      "cve_id": "CVE-2024-buster-sqlite",  "package": "sqlite3",   "ecosystem": null},
+    {"id": "i-005", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2020-lodash-1",       "package": "lodash",    "ecosystem": "npm"},
+    {"id": "i-006", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2021-lodash-2",       "package": "lodash",    "ecosystem": "npm"},
+    {"id": "i-007", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2021-qs",             "package": "qs",        "ecosystem": "npm"},
+    {"id": "i-008", "repo": "sss-enforcement-frenchfines-service", "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2024-handlebars",     "package": "handlebars","ecosystem": "npm"},
+    {"id": "i-009", "repo": "hub-parking-tariffmodifiers-facade",  "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2024-axios-ssrf",     "package": "axios",     "ecosystem": "npm"},
+    {"id": "i-010", "repo": "hub-parking-tariffmodifiers-facade",  "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2024-form-data",      "package": "form-data", "ecosystem": "npm"},
+    {"id": "i-011", "repo": "hub-parking-tariffmodifiers-facade",  "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2023-handlebars",     "package": "handlebars","ecosystem": "npm"},
+    {"id": "i-012", "repo": "sss-dbinit",                          "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2024-4068",           "package": "braces",    "ecosystem": "npm"},
+    {"id": "i-013", "repo": "sss-dbinit",                          "severity": "Critical", "tool": "Dependabot", "cve_id": "CVE-2021-44906",          "package": "minimist",  "ecosystem": "npm"},
+    {"id": "h-001", "repo": "sss-enforcement-frenchfines-service", "severity": "High",     "tool": "Trivy",      "cve_id": "CVE-2024-h-1",            "package": "openssl",   "ecosystem": null},
+    {"id": "h-002", "repo": "hub-parking-tariffmodifiers-facade",  "severity": "High",     "tool": "Dependabot", "cve_id": "CVE-2024-h-2",            "package": "axios",     "ecosystem": "npm"},
+    {"id": "h-003", "repo": "sss-dbinit",                          "severity": "High",     "tool": "Dependabot", "cve_id": "CVE-2024-h-3",            "package": "braces",    "ecosystem": "npm"}
+  ],
+  "_note": "This sample is intentionally small (13 criticals across 3 repos) to keep the demo readable. A real BRM dump on 2026-05-22 had 273 criticals across 3 repos with the same distribution shape (FrenchFines dominant, two small dep-bump clusters)."
+}

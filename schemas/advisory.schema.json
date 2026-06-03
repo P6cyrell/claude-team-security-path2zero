@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arrive.com/schemas/path-to-zero/advisory.schema.json",
+  "title": "Cluster investigation advisory — YAML frontmatter",
+  "description": "Each Phase 4 sub-agent writes agents/<id>-<slug>.md with a YAML frontmatter block followed by markdown prose. This schema validates only the parsed frontmatter; the prose body is free-form. The synthesizer (Phase 5) reads frontmatter for structured fields and mines the prose for narrative copy.",
+  "type": "object",
+  "required": [
+    "schema_version", "cluster_id", "cluster_name", "repos",
+    "fix_family", "target_close_date", "confidence", "investigator", "investigated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "cluster_id":   { "type": "string", "pattern": "^[0-9]{2}$" },
+    "cluster_name": { "type": "string" },
+    "repos": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "cve_count_investigated": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How many of the cluster's CVEs the sub-agent actually verified. May be lower than the cluster's cve_count if some were dismissed as scanner noise."
+    },
+    "fix_family": {
+      "type": "string",
+      "enum": ["A", "B", "C"],
+      "description": "A = ship-now patch (override / dep bump, no breaking changes). B = staged upgrade (framework / Node major / base-image swap). C = containment + legacy modernization (multi-week rewrite or replace)."
+    },
+    "target_close_date": {
+      "type": "string", "format": "date",
+      "description": "When this cluster's criticals will hit zero. Used by the synthesizer to anchor the forecast."
+    },
+    "blocked_by": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^PSDEV-[0-9]+$" }
+    },
+    "depends_on_cluster_id": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[0-9]{2}$" },
+      "description": "Other cluster IDs this one is sequenced behind (e.g. ES migration must finish before FrenchFines starts)."
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Sub-agent's confidence that the recommended fix family + target date will land. low = surface significant unknowns in the prose body."
+    },
+    "estimated_effort_engineer_weeks": {
+      "type": "number",
+      "minimum": 0
+    },
+    "investigator": {
+      "type": "string",
+      "description": "Sub-agent identifier or human investigator name."
+    },
+    "investigated_at": {
+      "type": "string", "format": "date-time"
+    },
+    "scanner_noise_cves": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "CVEs the sub-agent dismissed as scanner noise (not reachable / wrong language detected / etc.). The synthesizer mentions these in the rationale bullets."
+    }
+  }
+}

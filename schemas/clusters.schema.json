@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arrive.com/schemas/path-to-zero/clusters.schema.json",
+  "title": "Cluster spec for Phase 4 fan-out",
+  "description": "clusters.json is derived in Phase 2 from concentration data and consumed by Phase 4. Each cluster becomes one sub-agent investigation that produces one advisory at agents/<NN>-<slug>.md. The orchestrator fans out N parallel sub-agents (one per cluster) in a single message.",
+  "type": "object",
+  "required": ["schema_version", "team", "derived_at", "repo_cache_root", "clusters"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "team": { "type": "string" },
+    "derived_at": { "type": "string", "format": "date" },
+    "repo_cache_root": {
+      "type": "string",
+      "description": "Absolute path to the shared repo cache populated by Phase 3 (repo-primer). Each cluster's repos are read from <repo_cache_root>/<repo_name>/."
+    },
+    "clusters": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "slug", "repos", "cve_count", "primary_source", "rationale"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9]{2}$",
+            "description": "Two-digit ordinal, e.g. \"01\". Determines advisory filename: agents/<id>-<slug>.md."
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "maxLength": 40,
+            "description": "Lowercase kebab-case fragment for the advisory filename, e.g. \"frenchfines-modernization\"."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Human-readable cluster name shown in the rendered deliverables."
+          },
+          "repos": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "cve_count": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Total critical CVEs in this cluster across all repos. The sum of cve_count across all clusters should equal exec_summary.today (modulo de-duplication noted in rationale)."
+          },
+          "primary_source": {
+            "type": "string",
+            "enum": ["trivy-base-image", "dependabot-npm", "dependabot-other", "code-scanning", "secret-scanning", "mixed"],
+            "description": "Where the criticals come from. Drives investigation depth."
+          },
+          "primary_package": {
+            "type": "string",
+            "description": "If most CVEs share a package (e.g. \"axios\", \"openssl\"), name it here. Optional."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Why these repos+CVEs are grouped. Read by the sub-agent so it knows what to look for."
+          },
+          "blocked_by": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^PSDEV-[0-9]+$" },
+            "description": "Known blocking tickets at derivation time. Sub-agent may add more."
+          }
+        }
+      }
+    }
+  }
+}
