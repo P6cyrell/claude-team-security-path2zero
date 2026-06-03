@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arrive.com/schemas/path-to-zero/plan.schema.json",
+  "title": "Path-to-Zero Plan",
+  "description": "Source-of-truth data for path-to-zero deliverables. Renderer fills Slides + Docs templates from this. schema_version is mandatory; renderers reject mismatched versions and run migrations.",
+  "type": "object",
+  "required": [
+    "schema_version", "team", "as_of_date", "engineering_lead", "epics",
+    "exec_summary", "burndown_png_path", "remaining_surface",
+    "dependency_grid", "critical_path_deep_dive", "epic_status",
+    "resource_reallocation", "timeline", "asks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "team": { "type": "string", "minLength": 1 },
+    "as_of_date": { "type": "string", "format": "date" },
+    "engineering_lead": { "type": "string" },
+    "epics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "additionalProperties": false,
+        "properties": {
+          "id":   { "type": "string", "pattern": "^PSDEV-[0-9]+$" },
+          "name": { "type": "string" }
+        }
+      }
+    },
+    "exec_summary": {
+      "type": "object",
+      "required": ["peak", "today", "services_with_criticals", "services_after_eod", "headline_bullets"],
+      "additionalProperties": false,
+      "properties": {
+        "peak":  { "type": "integer", "minimum": 0 },
+        "today": { "type": "integer", "minimum": 0 },
+        "services_with_criticals": { "type": "integer", "minimum": 0 },
+        "services_after_eod":      { "type": "integer", "minimum": 0 },
+        "headline_bullets": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "burndown_png_path": { "type": "string", "minLength": 1 },
+    "remaining_surface": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["repo", "critical", "high", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "repo":     { "type": "string" },
+          "critical": { "type": "integer", "minimum": 0 },
+          "high":     { "type": "integer", "minimum": 0 },
+          "status":   { "type": "string" }
+        }
+      }
+    },
+    "dependency_grid": {
+      "type": "object",
+      "required": ["title", "narrative", "regions"],
+      "additionalProperties": false,
+      "properties": {
+        "title":     { "type": "string" },
+        "narrative": { "type": "string" },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "name":   { "type": "string" },
+              "status": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "critical_path_deep_dive": {
+      "type": "object",
+      "required": ["service", "stat_line", "rationale_bullets"],
+      "additionalProperties": false,
+      "properties": {
+        "service":           { "type": "string" },
+        "stat_line":         { "type": "string" },
+        "rationale_bullets": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "epic_status": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "state", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "id":      { "type": "string", "pattern": "^PSDEV-[0-9]+$" },
+          "state":   { "type": "string" },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "resource_reallocation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["engineer", "from", "to"],
+        "additionalProperties": false,
+        "properties": {
+          "engineer": { "type": "string" },
+          "from":     { "type": "string" },
+          "to":       { "type": "string" }
+        }
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["date", "milestone", "open_criticals"],
+        "additionalProperties": false,
+        "properties": {
+          "date":           { "type": "string", "format": "date" },
+          "milestone":      { "type": "string" },
+          "open_criticals": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "asks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["num", "title", "body"],
+        "additionalProperties": false,
+        "properties": {
+          "num":   { "type": "integer", "minimum": 1 },
+          "title": { "type": "string" },
+          "body":  { "type": "string" }
+        }
+      }
+    }
+  }
+}

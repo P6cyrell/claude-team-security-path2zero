@@ -1,0 +1,27 @@
+{
+  "_doc": "Brand font for body/headings in path-to-zero deliverables. The Arrive wordmark is a custom logotype, not a typeface — this is the supporting family used for body, headings, and tables. Override primary_name with the actual Arrive corporate font name (e.g. Aeonik, Söhne, Graphik) if known; the Google Fonts fallback will be used when the corporate font is not available on the rendering surface.",
+  "primary_name":       "Plus Jakarta Sans",
+  "google_fonts_fallback": "Plus Jakarta Sans",
+  "system_fallback":    "Calibri",
+  "_rationale": "Plus Jakarta Sans is a geometric humanist sans-serif with rounded apertures and friendly character that visually pairs with the Arrive wordmark (geometric forms, soft terminals, distinctive italicized A). Available natively in Google Workspace (Slides, Docs) and Microsoft 365. Free for commercial use under SIL Open Font License.",
+  "weights_used": {
+    "regular": 400,
+    "medium":  500,
+    "semibold":600,
+    "bold":    700
+  },
+  "sizes_pt": {
+    "title_slide_title":    44,
+    "title_slide_subtitle": 20,
+    "section_header":       28,
+    "slide_body":           14,
+    "stat_tile_value":      54,
+    "stat_tile_label":      12,
+    "table_header":         12,
+    "table_cell":           11,
+    "footer":               9,
+    "doc_h1":               20,
+    "doc_h2":               14,
+    "doc_body":             11
+  }
+}

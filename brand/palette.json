@@ -1,0 +1,28 @@
+{
+  "_doc": "Arrive brand palette extracted from existing path-to-zero decks (BRM-Path-to-Zero-2026-05-22.pptx). Hex codes used inline in slide shapes.",
+  "primary_purple":   "#5F016F",
+  "secondary_purple": "#8704AF",
+  "dark_purple":      "#2C1733",
+  "muted_purple":     "#6E5570",
+  "primary_pink":     "#FFADE4",
+  "pink_tint_1":      "#FFC7EC",
+  "pink_tint_2":      "#FFE5F7",
+  "neutral_warm":     "#F9F5F4",
+  "neutral_cool":     "#EBEAEE",
+  "white":            "#FFFFFF",
+  "_usage": {
+    "title_banner_bg":   "primary_purple",
+    "title_text":        "white",
+    "accent_bar":        "primary_pink",
+    "section_header_bg": "primary_purple",
+    "section_header_fg": "white",
+    "body_text":         "dark_purple",
+    "table_header_bg":   "primary_purple",
+    "table_row_alt_bg":  "neutral_warm",
+    "stat_tile_bg":      "pink_tint_2",
+    "stat_tile_value":   "primary_purple",
+    "chart_line_actual": "primary_purple",
+    "chart_line_plan":   "muted_purple",
+    "chart_line_fcst":   "primary_pink"
+  }
+}
