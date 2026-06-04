@@ -84,9 +84,11 @@ python3 <SKILL>/builders/state.py set-phase \
 
 ---
 
-# Phase 1 — Data-fetcher (sub-agent)
+# Phase 1 — Data fetch (parallel sub-agents: 1a + 1b)
 
-Launch the data-fetcher sub-agent with the prompt loaded from `<SKILL>/prompts/data-fetcher.md`. Pass team-specific inputs as a single message:
+Phase 1 has two independent sub-agents that run **in parallel** — fan them out in a single assistant turn with two `Agent` tool calls.
+
+## Phase 1a — data-fetcher (security-insights)
 
 ```
 Agent(
@@ -103,14 +105,35 @@ Agent(
 )
 ```
 
-Mark `1_data_fetcher` in_progress before launching, done on success, failed on error. On failure, surface the sub-agent's error and ask the user to retry or skip (e.g. manual paste-in of the count).
+## Phase 1b — jira-fetcher (Jira tracking epics)
+
+**Skip Phase 1b** if the team isn't listed in `<SKILL>/brand/team-jira-epics.json` (no Jira tracking → no jira-facts.json → the synthesizer falls back to update-only mining).
+
+If a team-lead update is going to be provided this run, save the user's paste to `<WORK_DIR>/team-lead-update.txt` BEFORE launching Phase 1b so the fetcher can mine it.
+
+```
+Agent(
+  description: "jira-fetcher for <team> as of <AS_OF_DATE>",
+  subagent_type: "general-purpose",
+  prompt: <contents of prompts/jira-fetcher.md, then append:>
+
+  TEAM=<team>
+  AS_OF_DATE=<AS_OF_DATE>
+  JIRA_EPICS_CONFIG=<SKILL>/brand/team-jira-epics.json
+  RAW_DIR=<WORK_DIR>/_raw
+  FACTS_DIR=<WORK_DIR>/_facts
+  VALIDATE_JIRA_FACTS_PY=<SKILL>/builders/validate_jira_facts.py
+  TEAM_LEAD_UPDATE=<WORK_DIR>/team-lead-update.txt    # only if user provided one
+)
+```
+
+Mark `1_data_fetcher` in_progress before launching, done after both return successfully. If only one fails, log the failure but proceed — the synthesizer adapts to whichever inputs are present.
 
 **What you keep in main context after Phase 1:**
-- Total critical count
-- Top 3 repos with % of total
-- Working / failed endpoints
+- From 1a: total critical count, top 3 repos, working/failed security-insights endpoints
+- From 1b: epic count, overall pct_complete, cross-team blocker count
 
-Discard everything else — the raw issues stay on disk.
+Discard everything else — raw issues and raw Jira responses stay on disk.
 
 ---
 
@@ -212,6 +235,7 @@ Agent(
 
   ADVISORY_DIR=<WORK_DIR>/agents
   CONCENTRATION_JSON=<WORK_DIR>/_facts/concentration.json
+  JIRA_FACTS_JSON=<WORK_DIR>/_facts/jira-facts.json   # omit if Phase 1b skipped
   OPEN_VULNS_JSON=<WORK_DIR>/_raw/open-vulnerabilities-<AS_OF_DATE>.json
   OUT_PLAN_JSON=<WORK_DIR>/plan.json
   BURNDOWN_PNG_OUT=<WORK_DIR>/burndown.png
@@ -305,9 +329,10 @@ Phase 4 resume is finer-grained: only re-launch sub-agents whose advisory state 
 
 | Phase | Sub-agent | Prompt file | Inputs | Output | Return budget |
 |---|---|---|---|---|---|
-| 1 | data-fetcher | `prompts/data-fetcher.md` | TEAM, AS_OF_DATE, dirs | `_raw/*.json`, `concentration.json` | ≤80 words |
+| 1a | data-fetcher | `prompts/data-fetcher.md` | TEAM, AS_OF_DATE, dirs | `_raw/*.json`, `concentration.json` | ≤80 words |
+| 1b | jira-fetcher | `prompts/jira-fetcher.md` | TEAM, epics config, optional team-lead update | `_raw/jira-*.json`, `jira-facts.json` | ≤80 words |
 | 4 | cluster-investigator (×N) | `prompts/cluster-investigation.md` | one cluster + repo cache | `agents/NN-*.md` | ≤60 words |
-| 5 | synthesizer | `prompts/synthesizer.md` | advisories + concentration | `plan.json` + burndown.png | ≤80 words |
+| 5 | synthesizer | `prompts/synthesizer.md` | advisories + concentration + jira-facts | `plan.json` + burndown.png | ≤80 words |
 | 7 | portfolio-roller | `prompts/portfolio-roller.md` | per-team plans + burndowns | consolidated DOCX/PPTX/Gantt | ≤80 words |
 
 ---
@@ -317,8 +342,9 @@ Phase 4 resume is finer-grained: only re-launch sub-agents whose advisory state 
 | Script | Use |
 |---|---|
 | `state.py` | init / show / set-phase / set-advisory / resume-point |
-| `compute_concentration.py` | issues.json → concentration.json (Phase 1) |
+| `compute_concentration.py` | issues.json → concentration.json (Phase 1a) |
 | `validate_concentration.py` | schema + sum-reconciliation check |
+| `validate_jira_facts.py` | schema + progress-reconciliation check (Phase 1b) |
 | `derive_clusters.py` | concentration → clusters.json (Phase 2) |
 | `validate_clusters.py` | schema + repo-uniqueness check |
 | `prime_repo_cache.py` | clusters.json → populated repo cache (Phase 3) |

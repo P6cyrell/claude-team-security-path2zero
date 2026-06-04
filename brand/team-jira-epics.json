@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "_doc": "Maps team name (must match team-repos.json team_name) to the Jira epic keys that track that team's path-to-zero criticals work. Used by Phase 1b jira-fetcher. Add a team here when their work moves under Jira tracking. Source: team memory + 1:1 status updates as of 2026-06-04.",
+  "default_jira_instance": "mcp-atlassian",
+  "teams": {
+    "BRM": {
+      "jira_instance": "mcp-atlassian",
+      "epics": [
+        {"key": "PSDEV-62500", "name": "security",     "note": "Security vulnerability tasks — primary burndown tracker"},
+        {"key": "PSDEV-62501", "name": "Control",      "note": "Control technical upgrade"},
+        {"key": "PSDEV-62502", "name": "FrenchFines",  "note": "FrenchFines technical upgrade — currently the critical path"}
+      ]
+    },
+    "Hub Portal": {
+      "jira_instance": "mcp-atlassian",
+      "epics": [
+        {"key": "PSDEV-62549", "name": "criticals", "note": "Master ticket for hub-portal critical remediation"}
+      ]
+    },
+    "API First": {
+      "jira_instance": "mcp-atlassian",
+      "epics": [
+        {"key": "PSDEV-62854", "name": "hotfix", "note": "PSDEV-62854 hotfix"},
+        {"key": "PSDEV-62836", "name": "ci-cd-permanence", "note": "Trivy + Dependabot CI/CD permanence layer (also tracked by Publishing A&F)"}
+      ]
+    },
+    "Publishing A&F": {
+      "jira_instance": "mcp-atlassian",
+      "epics": [
+        {"key": "PSDEV-62836", "name": "ci-cd-permanence", "note": "Trivy + Dependabot CI/CD permanence layer — Piotr-led"},
+        {"key": "PSDEV-62838", "name": "eventcarrier",   "note": "hub-publishing-eventcarrier-poller remediation"},
+        {"key": "PSDEV-62837", "name": "eventnotif",     "note": "hub-publishing-eventnotification-service remediation"},
+        {"key": "PSDEV-62842", "name": "mailsender",     "note": "hub-publishing-mailsender-poller remediation"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "team": "BRM",
+  "as_of_date": "2026-05-22",
+  "jira_instance": "mcp-atlassian",
+  "fetched_at": "2026-05-22T18:00:00Z",
+  "epics": [
+    {
+      "key": "PSDEV-62500",
+      "name": "security",
+      "summary": "Security vulnerability tasks",
+      "status": "In Progress",
+      "status_category": "indeterminate",
+      "assignee": "Geoffray",
+      "url": "https://flowbird.atlassian.net/browse/PSDEV-62500",
+      "children": [
+        {"key": "PSDEV-62511", "summary": "axios overrides — tariffmod-facade",   "status": "Done",        "status_category": "done",         "assignee": "Geoffray",         "resolution_date": "2026-05-22"},
+        {"key": "PSDEV-62512", "summary": "minimist+braces — sss-dbinit",         "status": "Done",        "status_category": "done",         "assignee": "Geoffray",         "resolution_date": "2026-05-22"},
+        {"key": "PSDEV-62513", "summary": "handlebars override across services",  "status": "In Progress", "status_category": "indeterminate","assignee": "Steven Dugois"}
+      ],
+      "progress": {"done": 2, "in_progress": 1, "todo": 0, "total": 3, "pct_complete": 66.7},
+      "recent_transitions_30d": [
+        {"key": "PSDEV-62511", "from_status": "In Progress", "to_status": "Done", "at": "2026-05-22T16:42:00Z"},
+        {"key": "PSDEV-62512", "from_status": "In Progress", "to_status": "Done", "at": "2026-05-22T15:10:00Z"}
+      ]
+    },
+    {
+      "key": "PSDEV-62501",
+      "name": "Control",
+      "summary": "Control technical upgrade",
+      "status": "Done",
+      "status_category": "done",
+      "assignee": "Nicolas Billamboz",
+      "url": "https://flowbird.atlassian.net/browse/PSDEV-62501",
+      "children": [
+        {"key": "PSDEV-62521", "summary": "Node 20 + Alpine dep surgery",     "status": "Done", "status_category": "done", "assignee": "Nicolas Billamboz", "resolution_date": "2026-05-18"},
+        {"key": "PSDEV-62522", "summary": "ES5→ES7 client adapter",           "status": "Done", "status_category": "done", "assignee": "Steven Illien",     "resolution_date": "2026-05-19"},
+        {"key": "PSDEV-62523", "summary": "Integration test coverage",        "status": "Done", "status_category": "done", "assignee": "Nicolas Billamboz", "resolution_date": "2026-05-20"},
+        {"key": "PSDEV-62524", "summary": "Merge to main + deploy gate",      "status": "Done", "status_category": "done", "assignee": "Geoffray",          "resolution_date": "2026-05-20"}
+      ],
+      "progress": {"done": 4, "in_progress": 0, "todo": 0, "total": 4, "pct_complete": 100.0}
+    },
+    {
+      "key": "PSDEV-62502",
+      "name": "FrenchFines",
+      "summary": "FrenchFines technical upgrade",
+      "status": "In Progress",
+      "status_category": "indeterminate",
+      "assignee": "Steven Illien",
+      "url": "https://flowbird.atlassian.net/browse/PSDEV-62502",
+      "children": [
+        {"key": "PSDEV-62531", "summary": "ES production migration: AU",       "status": "Done",        "status_category": "done",         "assignee": "Edvin Smajić",       "resolution_date": "2026-05-15"},
+        {"key": "PSDEV-62532", "summary": "ES production migration: EU",       "status": "Done",        "status_category": "done",         "assignee": "Edvin Smajić",       "resolution_date": "2026-05-18"},
+        {"key": "PSDEV-62533", "summary": "ES production migration: US",       "status": "Done",        "status_category": "done",         "assignee": "Edvin Smajić",       "resolution_date": "2026-05-21"},
+        {"key": "PSDEV-62534", "summary": "ES7 client adapter — frenchfines",  "status": "Done",        "status_category": "done",         "assignee": "Steven Illien",      "resolution_date": "2026-05-21"},
+        {"key": "PSDEV-62535", "summary": "Node 8 → Node 20 surgery",          "status": "Done",        "status_category": "done",         "assignee": "Kilian Vuillaume",   "resolution_date": "2026-05-22"},
+        {"key": "PSDEV-62536", "summary": "Base image: Buster → distroless",   "status": "In Progress", "status_category": "indeterminate","assignee": "Kilian Vuillaume"},
+        {"key": "PSDEV-62537", "summary": "CI / integration test fixes",       "status": "In Progress", "status_category": "indeterminate","assignee": "Steven Illien"},
+        {"key": "PSDEV-62538", "summary": "Ops runbook audit (distroless)",    "status": "To Do",       "status_category": "new",          "assignee": null, "blocked_by": ["PSDEV-62536"]},
+        {"key": "PSDEV-62539", "summary": "Staged deploy — AU canary",         "status": "To Do",       "status_category": "new",          "assignee": null, "blocked_by": ["PSDEV-62537"]},
+        {"key": "PSDEV-62540", "summary": "Production rollout EU+US",          "status": "To Do",       "status_category": "new",          "assignee": null, "blocked_by": ["PSDEV-62539"]}
+      ],
+      "progress": {"done": 5, "in_progress": 2, "todo": 3, "total": 10, "pct_complete": 50.0},
+      "recent_transitions_30d": [
+        {"key": "PSDEV-62535", "from_status": "In Progress", "to_status": "Done", "at": "2026-05-22T11:24:00Z"}
+      ]
+    }
+  ],
+  "cross_team_blockers": [
+    {
+      "key": "INFRA-7821",
+      "summary": "Provision distroless base image pin for Streetsmart registry",
+      "status": "In Progress",
+      "assignee": "Cedric (Platform)",
+      "linked_from": "PSDEV-62536",
+      "link_type": "is blocked by"
+    }
+  ],
+  "endpoint_status": {
+    "jira_get_issue":       "ok",
+    "jira_get_epic_issues": "ok",
+    "jira_search_jql":      "ok"
+  },
+  "team_lead_notes": {
+    "source_path": "/tmp/sample-team-lead-update.txt",
+    "reallocations": [
+      {"engineer": "Steven Dugois",     "from": "Pulse US stream",    "to": "security"},
+      {"engineer": "Kilian Vuillaume",  "from": "Datadog monitoring", "to": "security"},
+      {"engineer": "Edvin Smajić",      "from": "Datadog monitoring", "to": "security"},
+      {"engineer": "Kilian Beaumont",   "from": "Datadog monitoring", "to": "security (half-allocated)"}
+    ],
+    "milestone_updates": [
+      {"text": "Control deploys 06-03 (ES migration in hand)", "target_date": "2026-06-03", "epic_key": "PSDEV-62501"},
+      {"text": "FrenchFines closes the tail late June",        "target_date": "2026-06-26", "epic_key": "PSDEV-62502"}
+    ],
+    "dependency_status": [
+      {"name": "ES production data migration", "status": "Complete across AU/EU/US (2026-05-21)"}
+    ]
+  }
+}

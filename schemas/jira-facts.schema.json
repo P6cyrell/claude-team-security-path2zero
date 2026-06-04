@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arrive.com/schemas/path-to-zero/jira-facts.schema.json",
+  "title": "Jira facts for Phase 5 synthesis",
+  "description": "Output of Phase 1b jira-fetcher. Per-epic progress + child issues + cross-team blockers. Consumed by the synthesizer as the authoritative ticket-status source.",
+  "type": "object",
+  "required": ["schema_version", "team", "as_of_date", "jira_instance", "fetched_at", "epics", "endpoint_status"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "team": { "type": "string" },
+    "as_of_date": { "type": "string", "format": "date" },
+    "jira_instance": { "type": "string", "description": "Which Atlassian MCP instance the data came from." },
+    "fetched_at": { "type": "string", "format": "date-time" },
+    "epics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["key", "summary", "status", "url", "children", "progress"],
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+          "name": { "type": "string", "description": "Optional short alias from team-jira-epics.json (e.g. 'security', 'FrenchFines')." },
+          "summary": { "type": "string" },
+          "status": { "type": "string", "description": "Jira status name, e.g. 'In Progress', 'Done'." },
+          "status_category": { "type": "string", "enum": ["new", "indeterminate", "done"] },
+          "assignee": { "type": ["string", "null"] },
+          "url": { "type": "string" },
+          "children": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "summary", "status", "status_category"],
+              "additionalProperties": false,
+              "properties": {
+                "key": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+                "summary": { "type": "string" },
+                "status": { "type": "string" },
+                "status_category": { "type": "string", "enum": ["new", "indeterminate", "done"] },
+                "assignee": { "type": ["string", "null"] },
+                "resolution_date": { "type": ["string", "null"], "description": "ISO date if status_category=done." },
+                "blocks": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+                  "description": "Keys of issues this child blocks."
+                },
+                "blocked_by": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" }
+                }
+              }
+            }
+          },
+          "progress": {
+            "type": "object",
+            "required": ["done", "in_progress", "todo", "total", "pct_complete"],
+            "additionalProperties": false,
+            "properties": {
+              "done":        { "type": "integer", "minimum": 0 },
+              "in_progress": { "type": "integer", "minimum": 0 },
+              "todo":        { "type": "integer", "minimum": 0 },
+              "total":       { "type": "integer", "minimum": 0 },
+              "pct_complete":{ "type": "number",  "minimum": 0, "maximum": 100 }
+            }
+          },
+          "recent_transitions_30d": {
+            "type": "array",
+            "description": "Status changes on this epic's children in the last 30 days. Optional — fetcher writes empty if changelog access is restricted.",
+            "items": {
+              "type": "object",
+              "required": ["key", "to_status", "at"],
+              "additionalProperties": false,
+              "properties": {
+                "key":         { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+                "from_status": { "type": ["string", "null"] },
+                "to_status":   { "type": "string" },
+                "at":          { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cross_team_blockers": {
+      "type": "array",
+      "description": "Linked tickets one level deep via blocks / is-blocked-by that live in a project different from the epic's project, OR carry an obvious other-team owner. The synthesizer surfaces these in 'asks' since cross-team coordination is usually a leadership decision.",
+      "items": {
+        "type": "object",
+        "required": ["key", "summary", "status", "linked_from", "link_type"],
+        "additionalProperties": false,
+        "properties": {
+          "key":         { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+          "summary":     { "type": "string" },
+          "status":      { "type": "string" },
+          "assignee":    { "type": ["string", "null"] },
+          "linked_from": { "type": "string", "description": "Which child issue is linked to this one." },
+          "link_type":   { "type": "string", "enum": ["blocks", "is blocked by"] }
+        }
+      }
+    },
+    "endpoint_status": {
+      "type": "object",
+      "description": "Which Jira MCP tools worked. Synthesizer downgrades confidence when key tools failed.",
+      "additionalProperties": false,
+      "properties": {
+        "jira_get_issue":       { "type": "string", "enum": ["ok", "failed"] },
+        "jira_get_epic_issues": { "type": "string", "enum": ["ok", "failed"] },
+        "jira_search_jql":      { "type": "string", "enum": ["ok", "failed"] }
+      }
+    },
+    "team_lead_notes": {
+      "type": "object",
+      "description": "Optional: extracted facts from a team-lead-update file (Slack paste / Gemini transcript). If the user provided one, the jira-fetcher mines it for ticket-relevant facts and structures them here so the synthesizer has them alongside Jira ground truth.",
+      "additionalProperties": false,
+      "properties": {
+        "source_path":         { "type": "string" },
+        "reallocations":       {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["engineer", "from", "to"],
+            "additionalProperties": false,
+            "properties": {
+              "engineer": { "type": "string" },
+              "from":     { "type": "string" },
+              "to":       { "type": "string" }
+            }
+          }
+        },
+        "milestone_updates":   {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text"],
+            "additionalProperties": false,
+            "properties": {
+              "text":       { "type": "string" },
+              "target_date":{ "type": "string", "format": "date" },
+              "epic_key":   { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" }
+            }
+          }
+        },
+        "dependency_status":   {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "name":   { "type": "string" },
+              "status": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
