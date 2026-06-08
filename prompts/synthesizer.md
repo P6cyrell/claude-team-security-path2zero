@@ -8,6 +8,7 @@ Your invoking message will give you absolute paths to:
 
 - `ADVISORY_DIR` — directory containing `agents/NN-<topic>.md` cluster advisories from Phase 4
 - `CONCENTRATION_JSON` — `_facts/concentration.json` from Phase 1a (repo → critical count)
+- `TREND_JSON` *(optional)* — `_facts/trend.json` from Phase 1a (daily historical critical counts derived from `get_sla_metrics.openTrends[]` via `compute_trend.py`). **Strongly preferred** as the source of `burndown_series.actual[]` — eliminates hand-stitching from memory / status updates and gives chart-grade granularity.
 - `JIRA_FACTS_JSON` *(optional)* — `_facts/jira-facts.json` from Phase 1b (epic progress + cross-team blockers + extracted team-lead-notes). Skip Jira logic if absent.
 - `OPEN_VULNS_JSON` — `_raw/open-vulnerabilities-<date>.json` (authoritative critical count for the team)
 - `OUT_PLAN_JSON` — where to write the final plan.json
@@ -21,6 +22,7 @@ Your invoking message will give you absolute paths to:
 | Field family | Source of truth | Rationale |
 |---|---|---|
 | Vulnerability counts (peak, today, repo critical/high counts) | `CONCENTRATION_JSON` / `OPEN_VULNS_JSON` | Security-insights API is authoritative. |
+| Historical daily critical count (burndown actual line) | `TREND_JSON` | `get_sla_metrics.openTrends[]` is the same data the dashboard renders. Don't hand-stitch from memory if this exists. |
 | Ticket status (open/closed, blocked-by, epic progress) | `JIRA_FACTS_JSON` | Jira is ground truth for ticket state. |
 | Narrative reasons ("delayed because X is on leave") | `TEAM_LEAD_UPDATE` / `JIRA_FACTS_JSON.team_lead_notes` | Updates carry context not in tickets. |
 | Future predictions, fix recommendations, target dates | Cluster advisories | The deep technical investigation lives there. |
@@ -76,8 +78,13 @@ Exactly two files on disk:
 6. **Build `burndown_series`:**
    - `baseline_date`: the value of `BASELINE_DATE`.
    - `baseline[]`: the original plan-of-record points — straight line from peak at `baseline_date` to target-zero at the originally-planned target date. If `PRIOR_PLAN_JSON` exists, copy its `burndown_series.baseline` verbatim (the baseline is locked, never changes).
-   - `actual[]`: historical data points from team-lead updates + advisories + status emails. Must end at `exec_summary.today` on `as_of_date`.
+   - `actual[]`:
+     - **If `TREND_JSON` is provided, copy `series[]` directly into `actual[]`.** That's the daily snapshot from the API and is authoritative. Optionally thin to ~10 points if the series is very dense — pick inflection points (sharp drops / rises) and keep both endpoints.
+     - **Reconcile with `concentration.json`:** the last `actual[]` point's value MUST equal `exec_summary.today`. If `TREND_JSON.today.value` disagrees with `CONCENTRATION_JSON.total_criticals`, prefer `CONCENTRATION_JSON` (newer snapshot) and append/replace the last point. Note the discrepancy in the asks if material (>2% drift).
+     - **Fallback if no `TREND_JSON`:** hand-stitch from team-lead updates + advisories + memory. Must end at `exec_summary.today` on `as_of_date`.
    - `forecast[]`: from today through target-zero. Use cluster `target_close_date` fields to anchor inflection points. If Jira facts are present, **reality-check the forecast against Jira velocity** — if Jira shows only 2 sub-tasks closed in the last 14 days but the forecast expects 8 more in the next 14, downgrade confidence and flag in asks. Must end at value=0.
+
+   **`peak` source of truth:** if `TREND_JSON` is provided, prefer `TREND_JSON.peak.value` over any memory-based number for `exec_summary.peak`. This avoids the `885` / `607` style discrepancies caused by historical re-scans, archived repos, or differing team scope.
 
 7. **Build the timeline table** (slide 9 / doc §8). Use up to 7 inflection points from history + forecast. The first row is the baseline date with peak count; the last row is target-zero. If Jira facts are present, include recent sub-task closures (last 14 days) as timeline rows. Do not include >7 rows — the template won't fit them.
 

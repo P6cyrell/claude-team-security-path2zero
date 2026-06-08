@@ -35,29 +35,72 @@ You make MCP tool calls. You do NOT investigate code, write advisories, or compo
 
 Call `mcp__security-insights__health_check`. If it returns 401 / unauthenticated, **stop and ask the orchestrator for fresh credentials** (Bearer + cookie) — the orchestrator will pass them in a follow-up message and call `setup` for you.
 
-### 2. Resolve the team
+### 2. Resolve the team + experience
 
-Call `mcp__security-insights__get_teams`. Find the entry where `name == TEAM` (case-insensitive substring match if exact fails). Capture its `id` for subsequent calls.
+(a) `mcp__security-insights__get_teams` returns a flat list of team names (lowercase / kebab-case, e.g. `brm`, `hub-portal`, `api-first`, `publishing-af`).
 
-### 3. Pull the authoritative critical count
+Find the entry matching TEAM (case-insensitive). **Use the exact lowercase spelling returned by the API** for all subsequent calls — `BRM` and `brm` produce different results.
+
+(b) `mcp__security-insights__get_teams_in_experiences` returns `{<experience_name>: [<team>, ...], ...}`. Find which experience your team belongs to. For the City Experience teams (`brm`, `hub-portal`, `api-first`, `publishing-af`, and others) this is `"City XP"`.
+
+Capture `TEAM_LOWER` and `EXPERIENCE` for use in all `/reports/*` calls below.
+
+### 3. Build the shared `/reports/*` filter payload
+
+**Every `/reports/*` call requires the FULL filter object — incomplete payloads 500.** The web UI sends 8 fields and so must you. Construct once and reuse:
+
+```json
+{
+  "selectedOrg":         "All",
+  "selectedExperience":  "<EXPERIENCE>",
+  "selectedTeam":        "<TEAM_LOWER>",
+  "selectedSeverities":  ["CRITICAL"],
+  "selectedFirstDate":   "<AS_OF_DATE minus 90 days, YYYY-MM-DD>",
+  "selectedLastDate":    "<AS_OF_DATE>",
+  "excludedRepos":       [],
+  "selectedToolNames":   []
+}
+```
+
+Notes:
+- `selectedSeverities` enum is uppercase at the MCP boundary (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `UNKNOWN`). The MCP server converts to lowercase for the API.
+- 90-day window is the default — extend to 180+ if the team needs deeper historical context for the burndown.
+- Omitting any field will produce a 500 error from the API even on otherwise-correct calls.
+
+### 4. Pull `get_open_vulnerabilities` — the authoritative count
 
 ```
-mcp__security-insights__get_open_vulnerabilities(team=<team_id>, severity=Critical)
+mcp__security-insights__get_open_vulnerabilities(<full filter payload>)
 ```
 
-Save full response to `<RAW_DIR>/open-vulnerabilities-<AS_OF_DATE>.json`. Note the total count — this is the **portfolio source of truth**.
+Save the response to `<RAW_DIR>/open-vulnerabilities-<AS_OF_DATE>.json`. The response shape is:
 
-If this endpoint returns 5xx, do NOT proceed. The whole pipeline depends on the authoritative count. Return failure to the orchestrator.
+```json
+{
+  "byRepository": [
+    {"repo_fullname": "org/repo", "critical": N, "high": N, "medium": N, "low": N, "unknown": N, "total_alerts": N, "team_owner": "...", "experience": "...", "github_org": "..."}
+  ],
+  "byTeam": [
+    {"team_owner": "...", "critical": N, ...}
+  ]
+}
+```
 
-### 4. Pull supporting endpoints — best-effort
+The authoritative count is `byTeam[0].critical`. The `byRepository` array (filtered to critical>0) is the same data `get_top_assets` returns.
 
-For each of `get_top_assets`, `get_resolving_trends`, `get_mttr_metrics`, `get_sla_metrics`:
+If this endpoint returns 5xx **with the full payload**, that's a real outage — return failure to the orchestrator.
 
-- Call with team filter + severity=Critical + sensible date window (90 days default).
+### 5. Pull supporting `/reports/*` endpoints — best-effort
+
+For each of `get_resolving_trends`, `get_mttr_metrics`, `get_sla_metrics`:
+
+- Call with the **same full filter payload** from step 3.
 - On 2xx: save to `<RAW_DIR>/<endpoint>-<AS_OF_DATE>.json`, mark `ok` in endpoint-status.
-- On 5xx or empty body: mark `failed` in endpoint-status, do not retry more than twice.
+- On 5xx with full payload: mark `failed`, do not retry more than twice.
 
-The `/reports/*` family (`resolving-trends`, `mttr`, `sla`) has a known habit of 500-ing server-side. Treat these as **opportunistic**: capture what you can, never block the run on their failure.
+**Critical:** `get_sla_metrics.openTrends[]` is a goldmine — daily critical count for the entire date window. The synthesizer uses this for the burndown `actual[]` line. Always try to capture it.
+
+Also call `get_top_assets` with the same payload (different schema — uses `topN` and `selectedSeverities` enum). Save to `<RAW_DIR>/top-assets-<AS_OF_DATE>.json`.
 
 ### 5. Paginate `get_security_issues`
 

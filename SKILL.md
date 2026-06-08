@@ -102,8 +102,21 @@ Agent(
   FACTS_DIR=<WORK_DIR>/_facts
   COMPUTE_CONCENTRATION_PY=<SKILL>/builders/compute_concentration.py
   VALIDATE_CONCENTRATION_PY=<SKILL>/builders/validate_concentration.py
+  COMPUTE_TREND_PY=<SKILL>/builders/compute_trend.py
 )
 ```
+
+After the sub-agent returns, run `compute_trend.py` against the saved sla-metrics file to produce `_facts/trend.json` for the synthesizer:
+
+```bash
+python3 <SKILL>/builders/compute_trend.py \
+  --sla-metrics <WORK_DIR>/_raw/sla-metrics-<AS_OF_DATE>.json \
+  --severity CRITICAL \
+  --as-of <AS_OF_DATE> \
+  --out <WORK_DIR>/_facts/trend.json
+```
+
+Skip this step if sla-metrics was marked `failed` in endpoint-status.json.
 
 ## Phase 1b — jira-fetcher (Jira tracking epics)
 
@@ -235,6 +248,7 @@ Agent(
 
   ADVISORY_DIR=<WORK_DIR>/agents
   CONCENTRATION_JSON=<WORK_DIR>/_facts/concentration.json
+  TREND_JSON=<WORK_DIR>/_facts/trend.json             # omit if sla-metrics 500'd
   JIRA_FACTS_JSON=<WORK_DIR>/_facts/jira-facts.json   # omit if Phase 1b skipped
   OPEN_VULNS_JSON=<WORK_DIR>/_raw/open-vulnerabilities-<AS_OF_DATE>.json
   OUT_PLAN_JSON=<WORK_DIR>/plan.json
@@ -343,6 +357,7 @@ Phase 4 resume is finer-grained: only re-launch sub-agents whose advisory state 
 |---|---|
 | `state.py` | init / show / set-phase / set-advisory / resume-point |
 | `compute_concentration.py` | issues.json → concentration.json (Phase 1a) |
+| `compute_trend.py` | sla-metrics.json → trend.json (Phase 1a, optional but strongly preferred) |
 | `validate_concentration.py` | schema + sum-reconciliation check |
 | `validate_jira_facts.py` | schema + progress-reconciliation check (Phase 1b) |
 | `derive_clusters.py` | concentration → clusters.json (Phase 2) |
