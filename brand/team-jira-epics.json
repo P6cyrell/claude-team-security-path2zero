@@ -6,9 +6,10 @@
     "BRM": {
       "jira_instance": "mcp-atlassian",
       "epics": [
-        {"key": "PSDEV-62500", "name": "security",     "note": "Security vulnerability tasks — primary burndown tracker"},
-        {"key": "PSDEV-62501", "name": "Control",      "note": "Control technical upgrade"},
-        {"key": "PSDEV-62502", "name": "FrenchFines",  "note": "FrenchFines technical upgrade — currently the critical path"}
+        {"key": "PSDEV-62500", "name": "security",            "note": "Security vulnerability tasks — primary burndown tracker"},
+        {"key": "PSDEV-62501", "name": "Control",             "note": "Control technical upgrade"},
+        {"key": "PSDEV-62502", "name": "FrenchFines-master",  "note": "FrenchFines master epic (single-child parent — real sub-task progress lives in PSDEV-63383)"},
+        {"key": "PSDEV-63383", "name": "FrenchFines-tracker", "note": "FrenchFines technical upgrade — Geoffray's sub-task tracker; the authoritative source for FrenchFines progress percentage"}
       ]
     },
     "Hub Portal": {

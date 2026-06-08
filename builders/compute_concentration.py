@@ -57,6 +57,18 @@ def _refine_dep_source(source: str, ecosystem: str | None) -> str:
     return "dependabot-npm"
 
 
+def _strip_org_prefix(repo: str | None) -> str | None:
+    """Normalize repo names to the short form expected by team-repos.json.
+
+    The security-insights API returns repos in `org/repo` form, but downstream
+    consumers (prime_repo_cache.py, the renderer's surface table) expect just
+    `repo`. Strip the prefix once at the data-fetch boundary.
+    """
+    if not repo:
+        return repo
+    return repo.rsplit("/", 1)[-1]
+
+
 def compute(issues_path: pathlib.Path,
             open_vulns_path: pathlib.Path,
             endpoint_status_path: pathlib.Path | None,
@@ -73,6 +85,24 @@ def compute(issues_path: pathlib.Path,
     else:
         raise SystemExit(f"unexpected issues.json shape; top-level keys: {list(raw.keys()) if isinstance(raw, dict) else type(raw).__name__}")
 
+    # Deduplicate by id — get_security_issues pagination can return the same
+    # issue across page boundaries, which inflates concentration counts.
+    seen_ids: set = set()
+    unique_items: list[dict] = []
+    duplicates_dropped = 0
+    for issue in items:
+        iid = _pick(issue, "id", "src_id", "issue_id", "uuid")
+        if iid is None:
+            # No stable id — keep the issue (can't dedupe), but this is unusual
+            unique_items.append(issue)
+            continue
+        if iid in seen_ids:
+            duplicates_dropped += 1
+            continue
+        seen_ids.add(iid)
+        unique_items.append(issue)
+    items = unique_items
+
     # Filter to criticals only
     crits = [i for i in items
              if str(_pick(i, "severity", "severity_name", default="")).lower() == "critical"]
@@ -84,7 +114,7 @@ def compute(issues_path: pathlib.Path,
     repo_sources: defaultdict[str, Counter] = defaultdict(Counter)
 
     for issue in crits:
-        repo = _pick(issue, "repo", "repository", "repo_name", "asset")
+        repo = _strip_org_prefix(_pick(issue, "repo", "repository", "repo_name", "asset"))
         if not repo:
             continue
         tool = _pick(issue, "tool", "scanner", "source", default="")
@@ -94,7 +124,7 @@ def compute(issues_path: pathlib.Path,
         repo_sources[repo][source] += 1
 
     for issue in highs:
-        repo = _pick(issue, "repo", "repository", "repo_name", "asset")
+        repo = _strip_org_prefix(_pick(issue, "repo", "repository", "repo_name", "asset"))
         if not repo:
             continue
         repo_highs[repo] += 1
@@ -135,7 +165,11 @@ def compute(issues_path: pathlib.Path,
         "sla":                  "ok",
     }
     if endpoint_status_path and endpoint_status_path.exists():
-        endpoint_status.update(json.loads(endpoint_status_path.read_text()))
+        raw_status = json.loads(endpoint_status_path.read_text())
+        # Sub-agents may add `_notes` / other underscore-prefixed diagnostic
+        # fields. Filter them out — concentration.schema.json is strict.
+        clean = {k: v for k, v in raw_status.items() if not k.startswith("_")}
+        endpoint_status.update(clean)
 
     return {
         "schema_version": 1,
@@ -144,7 +178,7 @@ def compute(issues_path: pathlib.Path,
         "total_criticals": int(total_criticals),
         "repos": repos,
         "endpoint_status": endpoint_status,
-    }
+    }, duplicates_dropped
 
 
 def main(argv):
@@ -157,7 +191,7 @@ def main(argv):
     ap.add_argument("--out", required=True)
     args = ap.parse_args(argv)
 
-    out = compute(
+    out, dups = compute(
         pathlib.Path(args.issues),
         pathlib.Path(args.open_vulns),
         pathlib.Path(args.endpoint_status) if args.endpoint_status else None,
@@ -170,6 +204,8 @@ def main(argv):
     out_path.write_text(json.dumps(out, indent=2) + "\n")
     print(f"wrote {out_path}  ({out_path.stat().st_size:,} bytes)")
     print(f"  total_criticals={out['total_criticals']}  repos={len(out['repos'])}")
+    if dups:
+        print(f"  dropped {dups} duplicate issue(s) across pagination boundaries")
 
 
 if __name__ == "__main__":
